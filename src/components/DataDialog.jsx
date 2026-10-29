@@ -25,7 +25,13 @@ const modeOptions = [
   },
 ];
 
-export default function DataDialog({ entries, onClose, onImport }) {
+export default function DataDialog({
+  entries,
+  user,
+  onClose,
+  onImport,
+  onRequireAuth,
+}) {
   const inputRef = useRef(null);
   const [fileData, setFileData] = useState(null);
   const [mode, setMode] = useState('merge');
@@ -36,6 +42,10 @@ export default function DataDialog({ entries, onClose, onImport }) {
   const [exportState, setExportState] = useState('idle');
 
   const handleExport = async () => {
+    if (!user) {
+      onRequireAuth?.();
+      return;
+    }
     if (!entries.length || busy) return;
     setBusy(true);
     setExportError('');
@@ -57,6 +67,11 @@ export default function DataDialog({ entries, onClose, onImport }) {
 
   const handleFile = async (file) => {
     if (!file) return;
+
+    if (!user) {
+      onRequireAuth?.();
+      return;
+    }
 
     if (file.size > importFileSizeLimit) {
       setFileData(null);
@@ -92,11 +107,19 @@ export default function DataDialog({ entries, onClose, onImport }) {
   const handleDrop = (event) => {
     event.preventDefault();
     setDragOver(false);
+    if (!user) {
+      onRequireAuth?.();
+      return;
+    }
     const file = event.dataTransfer.files?.[0];
     if (file) handleFile(file);
   };
 
   const handleImport = () => {
+    if (!user) {
+      onRequireAuth?.();
+      return;
+    }
     if (!fileData?.entries?.length) return;
     onImport(fileData.entries, mode);
   };
@@ -117,6 +140,12 @@ export default function DataDialog({ entries, onClose, onImport }) {
   return (
     <ModalShell title="导入 / 导出" onClose={onClose} size="md">
       <div className="p-6 sm:p-8">
+        {!user && (
+          <div className="mb-6 border border-[#d58b7e]/30 bg-[#d58b7e]/10 p-3.5 text-[12px] text-[#f2a99e]">
+            当前处于未登录状态，无法导入或导出手记数据。请先登录你的账号。
+          </div>
+        )}
+
         <p className="max-w-[56ch] text-[13.5px] leading-[1.7] text-mid">
           把整本观影手记导出为 JSON 备份，或从其他设备、iCloud Drive
           导入一份备份。文件只在本机浏览器中处理。
@@ -159,7 +188,7 @@ export default function DataDialog({ entries, onClose, onImport }) {
               type="button"
               data-autofocus
               onClick={handleExport}
-              disabled={!entries.length || busy}
+              disabled={!entries.length || busy || !user}
               className="focus-ring inline-flex shrink-0 items-center justify-center gap-2 bg-accent px-4 py-3 text-[10.5px] font-bold tracking-[.08em] text-accent-ink transition-[background-color,transform] duration-250 hover:bg-[#c18f50] active:scale-[.985] disabled:cursor-not-allowed disabled:opacity-40"
             >
               <DownloadIcon className="h-4 w-4" />
@@ -198,9 +227,16 @@ export default function DataDialog({ entries, onClose, onImport }) {
 
           <button
             type="button"
-            onClick={() => inputRef.current?.click()}
+            onClick={() => {
+              if (!user) {
+                onRequireAuth?.();
+                return;
+              }
+              inputRef.current?.click();
+            }}
             onDragOver={(event) => {
               event.preventDefault();
+              if (!user) return;
               event.dataTransfer.dropEffect = 'copy';
               setDragOver(true);
             }}
@@ -317,7 +353,8 @@ export default function DataDialog({ entries, onClose, onImport }) {
                 <button
                   type="button"
                   onClick={handleImport}
-                  className="focus-ring mt-3 inline-flex w-full items-center justify-center gap-2 bg-accent px-4 py-3 text-[10.5px] font-bold tracking-[.08em] text-accent-ink transition-[background-color,transform] duration-200 hover:bg-[#c18f50] active:scale-[.985]"
+                  disabled={!user}
+                  className="focus-ring mt-3 inline-flex w-full items-center justify-center gap-2 bg-accent px-4 py-3 text-[10.5px] font-bold tracking-[.08em] text-accent-ink transition-[background-color,transform] duration-200 hover:bg-[#c18f50] active:scale-[.985] disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   {mode === 'merge'
                     ? `合并导入 ${fileData.entries.length} 条记录`

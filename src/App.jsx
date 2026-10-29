@@ -258,6 +258,11 @@ export default function App() {
   };
 
   const handleOpenData = () => {
+    if (!user) {
+      showToast('未登录状态无法导入或导出数据，请先登录账号。');
+      setDialog({ type: 'account' });
+      return;
+    }
     setDialog({ type: 'data' });
   };
 
@@ -570,8 +575,13 @@ export default function App() {
       {dialog?.type === 'data' && (
         <DataDialog
           entries={entries}
+          user={user}
           onClose={() => setDialog(null)}
           onImport={handleImportData}
+          onRequireAuth={() => {
+            showToast('未登录状态无法导入或导出数据，请先登录账号。');
+            setDialog({ type: 'account' });
+          }}
         />
       )}
 
