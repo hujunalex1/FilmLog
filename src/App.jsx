@@ -8,7 +8,6 @@ import EntryDetailDialog from './components/EntryDetailDialog';
 import DataDialog from './components/DataDialog';
 import AccountDialog from './components/AccountDialog';
 import Toast from './components/Toast';
-import Footer from './components/Footer';
 import { retiredSeedIds, seedEntries } from './data/content';
 import { usePersistentState } from './hooks/usePersistentState';
 import { useSupabaseAuth } from './hooks/useSupabaseAuth';
@@ -466,12 +465,6 @@ export default function App() {
             onResetFilters={handleResetFilters}
           />
         </main>
-
-        <Footer
-          onOpenData={handleOpenData}
-          onOpenAccount={handleOpenAccount}
-          user={user}
-        />
       </div>
 
       {dialog?.type === 'log' && (
