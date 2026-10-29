@@ -247,6 +247,11 @@ export default function App() {
   };
 
   const handleOpenLog = () => {
+    if (!user) {
+      showToast('未登录状态无法记录电影，请先登录账号。');
+      setDialog({ type: 'account' });
+      return;
+    }
     setDialog({ type: 'log', entry: null });
   };
 
@@ -287,6 +292,12 @@ export default function App() {
   };
 
   const handleImportData = (importedEntries, mode) => {
+    if (!user) {
+      showToast('未登录状态无法导入记录，请先登录账号。');
+      setDialog({ type: 'account' });
+      return;
+    }
+
     if (mode === 'replace') {
       const confirmed = window.confirm(
         `确定用文件中的 ${importedEntries.length} 条记录替换当前 ${entries.length} 条记录吗？此操作不可撤销。`,
@@ -308,10 +319,20 @@ export default function App() {
   };
 
   const handleEdit = (entry) => {
+    if (!user) {
+      showToast('未登录状态无法编辑电影记录，请先登录账号。');
+      setDialog({ type: 'account' });
+      return;
+    }
     setDialog({ type: 'log', entry, returnToDetailId: null });
   };
 
   const handleEditFromDetail = (entry) => {
+    if (!user) {
+      showToast('未登录状态无法编辑电影记录，请先登录账号。');
+      setDialog({ type: 'account' });
+      return;
+    }
     setDialog({ type: 'log', entry, returnToDetailId: entry.id });
   };
 
@@ -324,6 +345,12 @@ export default function App() {
   };
 
   const handleSave = (values) => {
+    if (!user) {
+      showToast('未登录状态无法保存电影记录，请先登录账号。');
+      setDialog({ type: 'account' });
+      return;
+    }
+
     if (values.id) {
       setEntries((current) =>
         current.map((entry) =>
@@ -347,6 +374,12 @@ export default function App() {
   };
 
   const handleToggleFavorite = (entry) => {
+    if (!user) {
+      showToast('未登录状态无法更改收藏，请先登录账号。');
+      setDialog({ type: 'account' });
+      return;
+    }
+
     const nextFavorite = !entry.favorite;
     setEntries((current) =>
       current.map((item) =>
@@ -361,6 +394,12 @@ export default function App() {
   };
 
   const handleToggleStatus = (entry) => {
+    if (!user) {
+      showToast('未登录状态无法更改观影状态，请先登录账号。');
+      setDialog({ type: 'account' });
+      return;
+    }
+
     const movingToWatchlist = entry.status === 'watched';
     setEntries((current) =>
       current.map((item) =>
@@ -387,6 +426,12 @@ export default function App() {
   };
 
   const handleUpdate = (entry, patch) => {
+    if (!user) {
+      showToast('未登录状态无法修改评分，请先登录账号。');
+      setDialog({ type: 'account' });
+      return;
+    }
+
     setEntries((current) =>
       current.map((item) =>
         item.id === entry.id ? { ...item, ...patch } : item,
@@ -402,6 +447,12 @@ export default function App() {
   };
 
   const handleDelete = (entry) => {
+    if (!user) {
+      showToast('未登录状态无法删除电影，请先登录账号。');
+      setDialog({ type: 'account' });
+      return;
+    }
+
     const confirmed = window.confirm(
       `确定要从手记中删除《${entry.title}》吗？此操作不可撤销。`,
     );
