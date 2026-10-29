@@ -115,10 +115,12 @@ export default function Hero({
             className="focus-ring group relative block aspect-[4/3] w-full overflow-hidden rounded-card sm:aspect-[16/9] lg:aspect-[16/11] border border-hairline bg-thumb text-left shadow-[0_18px_36px_-18px_rgba(0,0,0,.8)]"
             aria-label={`打开最新记录：${featured.title}`}
           >
-            {featured.still ? (
+            {featuredArtwork.still ? (
               <img
-                src={featured.still}
+                src={featuredArtwork.still}
                 alt=""
+                loading="eager"
+                decoding="async"
                 className="cinema-still absolute inset-0 h-full w-full object-cover"
               />
             ) : (

@@ -6,6 +6,7 @@
 - 数据：`src/data/history.js` 历史记录 + `localStorage` 本地缓存 + Supabase 云同步 + JSON 备份
 - 字体：Manrope Variable（西文 UI）+ Instrument Serif（西文展示标题），中文回退到 PingFang SC / 宋体
 - 响应式：桌面 4 列 / 平板 2 列 / 手机 1 列
+- 主图：151 张海报，卡片 16:9 裁切 + 详情 2:3 完整海报
 - 预览图：[桌面](docs/preview-desktop.png) · [记录网格](docs/preview-grid.png) · [详情弹层](docs/preview-detail.png) · [新增记录弹层](docs/preview-log.png) · [导入 / 导出](docs/preview-data.png) · [云同步登录](docs/preview-account.png) · [手机](docs/preview-mobile.png)
 
 ## 运行
@@ -86,6 +87,17 @@ npm run preview
 
 主要 token 定义在 [`src/index.css`](src/index.css) 的 `@theme` 中。
 
+## 主图
+
+- 151 张原始海报位于用户提供的目录，已批量转换为 WebP 并放入 `public/covers/`
+- 每部电影两张：
+  - `*-still.webp`：960×540，用于卡片和首屏主图
+  - `*-poster.webp`：600×900，用于详情弹层
+- 卡片主图是从竖版海报裁切的 16:9 画面，详情保留完整 2:3 海报
+- 图片映射在 `src/data/covers.js`：优先按记录 id 匹配，其次按规范化片名匹配
+- 如果记录自己的 `still` / `poster` 字段有值，会优先使用记录自带图片
+- 卡片图片使用懒加载，首屏只加载前 8 张
+
 ## 导入 / 导出与 iCloud
 
 入口有两个：顶部导航右侧的「数据」图标，以及页脚的「导入 / 导出」。
@@ -160,8 +172,9 @@ src/
     Footer.jsx
     Icons.jsx
 public/
-  stills/                     # 16:9 占位剧照
-  posters/                    # 2:3 占位海报
+  covers/                    # 151 张主图，含 16:9 still 与 2:3 poster
+  stills/                     # 可选占位剧照
+  posters/                    # 可选占位海报
 supabase/
   schema.sql                  # 表、RLS、索引和触发器
 docs/                         # 预览截图
@@ -171,7 +184,7 @@ docs/                         # 预览截图
 
 1. **品牌 / Logo**：修改 `src/components/Icons.jsx` 中的 `LogoMark`，以及 `src/data/content.js` 中的 `brand`。
 2. **电影条目**：导入的数据在 `src/data/history.js` 的 `historyEntries` 中，`content.js` 将其作为 `seedEntries`。新增记录直接用页面上的「记录电影」；也可以继续编辑 `history.js` 后清空 v3 本地数据重新导入。字段包括 `title`、`year`、`director`、`runtime`、`genres`、`status`、`rating`、`watchedAt`、`watchedYear`、`note`、`still`、`poster` 等。
-3. **图片**：直接替换 `public/stills/*.jpg` 和 `public/posters/*.jpg`，或把数据里的路径指向自己的图片。
+3. **图片**：主图在 `public/covers/`，按 `<记录 id>-still.webp` 和 `<记录 id>-poster.webp` 命名。映射表在 `src/data/covers.js`，按记录 id 匹配，找不到时按规范化片名匹配。直接替换同名文件即可更新主图；没有图片的记录会回退到文字占位画面。
 4. **文案**：页面主文案在 `hero` 对象；其余界面文案分散在组件中。
 5. **已有本地数据 / 旧演示数据**：网站使用 `localStorage` key `motif.entries.v3`。首次读取时会从旧的 `motif.entries.v2` 迁移你自己新增的记录，并过滤掉旧版 8 条演示记录，再与历史数据合并。另有一个一次性标记 `motif.historyImport.v1`，用于修复“本地已有空 v3 数组导致看不到导入数据”的情况。
 
