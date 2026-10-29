@@ -95,8 +95,7 @@ export default function AccountDialog({
       <div className="p-6 sm:p-8">
         {!configured ? (
           <div className="border border-[#d58b7e]/35 bg-[#d58b7e]/10 p-4 text-[12.5px] leading-[1.7] text-[#e3aa9f]">
-            Supabase 环境变量还没有配置。请在 <code>.env.local</code> 中填写
-            `VITE_SUPABASE_URL` 和 `VITE_SUPABASE_ANON_KEY`。
+            Supabase 环境变量尚未配置。本地开发请在 <code>.env.local</code> 中填写，线上部署请在托管平台（如 Cloudflare Pages）的环境变量中添加 <code>VITE_SUPABASE_URL</code> 和 <code>VITE_SUPABASE_ANON_KEY</code>。
           </div>
         ) : signedIn ? (
           <>

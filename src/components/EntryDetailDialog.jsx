@@ -1,6 +1,7 @@
 import ModalShell from './ModalShell';
 import StarRating from './StarRating';
 import ArtworkPlaceholder from './ArtworkPlaceholder';
+import { resolveEntryCover } from '../data/covers';
 import {
   BookmarkIcon,
   CalendarIcon,
@@ -36,6 +37,7 @@ export default function EntryDetailDialog({
 }) {
   const watched = entry.status === 'watched';
   const watchedWhen = formatWatchedWhen(entry);
+  const artwork = resolveEntryCover(entry);
   const detailMeta = [
     entry.year,
     (entry.genres ?? []).join('、'),
@@ -49,10 +51,12 @@ export default function EntryDetailDialog({
       <div className="p-6 sm:p-8">
         <div className="flex flex-col gap-7 sm:flex-row sm:gap-8">
           <div className="relative aspect-[16/9] w-full overflow-hidden border border-hairline bg-thumb shadow-[0_18px_34px_-24px_rgba(0,0,0,.9)] sm:aspect-[2/3] sm:w-[218px] sm:max-w-[218px] sm:shrink-0">
-            {entry.poster ? (
+            {artwork.poster ? (
               <img
-                src={entry.poster}
+                src={artwork.poster}
                 alt=""
+                loading="eager"
+                decoding="async"
                 className="cinema-still h-full w-full object-cover"
               />
             ) : (

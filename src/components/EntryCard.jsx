@@ -8,6 +8,7 @@ import {
 } from './Icons';
 import EntryMenu from './EntryMenu';
 import ArtworkPlaceholder from './ArtworkPlaceholder';
+import { resolveEntryCover } from '../data/covers';
 import { formatShortDate, formatWatchedWhen } from '../lib/format';
 
 export default function EntryCard({
@@ -28,6 +29,7 @@ export default function EntryCard({
   const note = entry.note || entry.synopsis || '';
   const genres = (entry.genres ?? []).join(' · ');
   const ratingWidth = Math.max(0, Math.min(100, (Number(entry.rating) / 5) * 100));
+  const artwork = resolveEntryCover(entry);
 
   return (
     <article
@@ -41,10 +43,12 @@ export default function EntryCard({
           className="focus-ring relative block aspect-[16/9] w-full overflow-hidden rounded-tile bg-thumb text-left shadow-[0_0_0_1px_var(--color-hairline)] transition-shadow duration-200 group-hover:shadow-[0_0_0_1px_rgba(243,240,234,.22)] group-focus-within:shadow-[0_0_0_1px_rgba(243,240,234,.22)]"
           aria-label={`打开《${entry.title}》的观影记录`}
         >
-          {entry.still ? (
+          {artwork.still ? (
             <img
-              src={entry.still}
+              src={artwork.still}
               alt=""
+              loading={index < 8 ? 'eager' : 'lazy'}
+              decoding="async"
               className="cinema-still h-full w-full object-cover"
             />
           ) : (

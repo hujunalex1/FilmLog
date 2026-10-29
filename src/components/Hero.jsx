@@ -8,6 +8,7 @@ import {
 } from './Icons';
 import StarRating from './StarRating';
 import ArtworkPlaceholder from './ArtworkPlaceholder';
+import { resolveEntryCover } from '../data/covers';
 import { brand, hero } from '../data/content';
 import { formatWatchedWhen } from '../lib/format';
 
@@ -28,6 +29,7 @@ export default function Hero({
     : '';
   const featuredWhen = featured ? formatWatchedWhen(featured) : '';
   const featuredNote = featured?.note || featured?.synopsis || '';
+  const featuredArtwork = featured ? resolveEntryCover(featured) : { still: '', poster: '' };
   const cloudLabel = !user
     ? '登录以云同步'
     : cloudStatus === 'synced'
