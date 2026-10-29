@@ -1,4 +1,4 @@
-import { useId, useState } from 'react';
+import { useId, useRef, useState } from 'react';
 import ModalShell from './ModalShell';
 import StarRating from './StarRating';
 import {
@@ -6,8 +6,12 @@ import {
   CheckIcon,
   HeartIcon,
   PlusIcon,
+  TrashIcon,
+  UploadIcon,
 } from './Icons';
 import { artworkOptions, emptyEntry } from '../data/content';
+import { resolveEntryCover } from '../data/covers';
+import { compressImage } from '../lib/image';
 
 const baseInput =
   'focus-ring mt-2 w-full border bg-elevated px-3.5 text-[13px] text-hi placeholder:text-low/55 transition-colors duration-200 focus:border-accent';
@@ -17,6 +21,10 @@ const labelClass =
 
 function buildFormState(entry) {
   const source = entry ?? emptyEntry;
+  const resolved = entry ? resolveEntryCover(entry) : {};
+  const initialStill = source.still || resolved.still || artworkOptions[0].src;
+  const initialPoster = source.poster || resolved.poster || initialStill;
+
   return {
     title: source.title ?? '',
     year: source.year ? String(source.year) : '',
@@ -32,8 +40,8 @@ function buildFormState(entry) {
     watchedAt: source.watchedAt ?? '',
     favorite: Boolean(source.favorite),
     rewatches: Number(source.rewatches) || 0,
-    still: source.still ?? artworkOptions[0].src,
-    poster: source.poster ?? artworkOptions[0].src,
+    still: initialStill,
+    poster: initialPoster,
     note: source.note ?? '',
     synopsis: source.synopsis ?? '',
   };
@@ -42,10 +50,17 @@ function buildFormState(entry) {
 export default function LogDialog({ entry, onClose, onSave }) {
   const [form, setForm] = useState(() => buildFormState(entry));
   const [error, setError] = useState('');
+  const [uploading, setUploading] = useState(false);
+  const [showUrlInput, setShowUrlInput] = useState(false);
+  const fileInputRef = useRef(null);
   const titleId = useId();
 
   const isEditing = Boolean(entry);
   const watching = form.status === 'watched';
+
+  const isCustomImage = Boolean(
+    form.still && !artworkOptions.some((option) => option.src === form.still),
+  );
 
   const update = (field, value) => {
     setForm((current) => ({ ...current, [field]: value }));
@@ -58,6 +73,46 @@ export default function LogDialog({ entry, onClose, onSave }) {
 
   const handleArtwork = (src) => {
     setForm((current) => ({ ...current, still: src, poster: src }));
+  };
+
+  const handleFileUpload = async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    try {
+      const result = await compressImage(file, { maxWidth: 1200, maxHeight: 1600 });
+      setForm((current) => ({
+        ...current,
+        still: result.dataUrl,
+        poster: result.dataUrl,
+      }));
+      if (error) setError('');
+    } catch (err) {
+      setError(err.message || '上传图片失败，请重试');
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
+  const handleCustomUrl = (url) => {
+    const trimmed = url.trim();
+    setForm((current) => ({
+      ...current,
+      still: trimmed,
+      poster: trimmed,
+    }));
+  };
+
+  const handleResetArtwork = () => {
+    setForm((current) => ({
+      ...current,
+      still: artworkOptions[0].src,
+      poster: artworkOptions[0].src,
+    }));
   };
 
   const handleSubmit = (event) => {
@@ -312,42 +367,139 @@ export default function LogDialog({ entry, onClose, onSave }) {
 
             <div className="sm:col-span-2">
               <div className="flex items-center justify-between gap-3">
-                <span className={labelClass}>占位画面</span>
-                <span className="text-[10px] text-low">选择一张剧照</span>
+                <span className={labelClass}>海报 / 剧照画面</span>
+                <span className="text-[10px] text-low">
+                  {isCustomImage ? '已选择自定义海报' : '可本地上传、填入链接或选择预设'}
+                </span>
               </div>
-              <div className="mt-2 grid grid-cols-4 gap-2 sm:grid-cols-8">
-                {artworkOptions.map((option) => {
-                  const selected = form.still === option.src;
-                  return (
+
+              {/* Upload Card / Preview */}
+              <div className="mt-2.5 flex flex-col gap-3.5 border border-hairline bg-thumb/40 p-3.5 sm:flex-row sm:items-center">
+                <div className="relative aspect-[16/10] w-full shrink-0 overflow-hidden border border-hairline bg-thumb sm:w-[130px]">
+                  {form.still ? (
+                    <img
+                      src={form.still}
+                      alt="当前海报预览"
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center text-[10.5px] text-low">
+                      暂无图片
+                    </div>
+                  )}
+                  {uploading && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/75 text-[11px] font-medium text-hi">
+                      压缩中...
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex min-w-0 flex-1 flex-col justify-between gap-2.5">
+                  <div>
+                    <p className="text-[12px] font-semibold text-hi">
+                      {isCustomImage ? '使用自定义图片' : '使用内置精选剧照'}
+                    </p>
+                    <p className="mt-0.5 text-[11px] leading-relaxed text-low">
+                      支持 JPG / PNG / WebP 格式。选图后浏览器会在本地自动优化压缩，不占额度。
+                    </p>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-2">
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFileUpload}
+                      className="hidden"
+                      id={`${titleId}-file-input`}
+                    />
                     <button
-                      key={option.id}
                       type="button"
-                      onClick={() => handleArtwork(option.src)}
-                      className={`focus-ring group/art relative aspect-[16/10] overflow-hidden border transition-colors duration-200 ${
-                        selected ? 'border-accent' : 'border-hairline hover:border-hi/30'
-                      }`}
-                      aria-label={`使用画面：${option.label}`}
-                      aria-pressed={selected}
-                      title={option.label}
+                      disabled={uploading}
+                      onClick={() => fileInputRef.current?.click()}
+                      className="focus-ring inline-flex items-center gap-1.5 border border-hairline bg-elevated px-3 py-1.5 text-[11px] font-semibold text-hi transition-colors hover:border-hi/30 hover:bg-elevated/80 disabled:opacity-50"
                     >
-                      <img
-                        src={option.src}
-                        alt=""
-                        loading="lazy"
-                        className={`h-full w-full object-cover transition-opacity duration-200 ${
-                          selected ? 'opacity-100' : 'opacity-65 group-hover/art:opacity-90'
-                        }`}
-                      />
-                      {selected && (
-                        <span className="absolute inset-0 flex items-center justify-center bg-black/20">
-                          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-accent text-accent-ink">
-                            <CheckIcon className="h-3 w-3" />
-                          </span>
-                        </span>
-                      )}
+                      <UploadIcon className="h-3.5 w-3.5 text-accent" />
+                      {uploading ? '正在处理...' : '上传本地海报'}
                     </button>
-                  );
-                })}
+
+                    <button
+                      type="button"
+                      onClick={() => setShowUrlInput((prev) => !prev)}
+                      className="focus-ring inline-flex items-center gap-1.5 border border-hairline px-3 py-1.5 text-[11px] font-medium text-mid transition-colors hover:border-hi/25 hover:text-hi"
+                    >
+                      {showUrlInput ? '收起 URL' : '图片链接'}
+                    </button>
+
+                    {isCustomImage && (
+                      <button
+                        type="button"
+                        onClick={handleResetArtwork}
+                        className="focus-ring inline-flex items-center gap-1 text-[11px] font-medium text-low transition-colors hover:text-[#d58b7e]"
+                      >
+                        <TrashIcon className="h-3 w-3" />
+                        恢复默认
+                      </button>
+                    )}
+                  </div>
+
+                  {showUrlInput && (
+                    <div className="mt-1">
+                      <input
+                        type="url"
+                        value={form.still?.startsWith('http') ? form.still : ''}
+                        onChange={(e) => handleCustomUrl(e.target.value)}
+                        placeholder="粘贴网络图片地址 (例如: https://.../poster.jpg)"
+                        className="focus-ring h-8 w-full border border-hairline bg-elevated px-2.5 text-[11.5px] text-hi placeholder:text-low/50 focus:border-accent"
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Preset Still Options */}
+              <div className="mt-3">
+                <span className="text-[10px] font-semibold text-low">
+                  或直接从内置精选画面中挑选：
+                </span>
+                <div className="mt-1.5 grid grid-cols-4 gap-2 sm:grid-cols-8">
+                  {artworkOptions.map((option) => {
+                    const selected = form.still === option.src;
+                    return (
+                      <button
+                        key={option.id}
+                        type="button"
+                        onClick={() => handleArtwork(option.src)}
+                        className={`focus-ring group/art relative aspect-[16/10] overflow-hidden border transition-colors duration-200 ${
+                          selected
+                            ? 'border-accent'
+                            : 'border-hairline hover:border-hi/30'
+                        }`}
+                        aria-label={`使用画面：${option.label}`}
+                        aria-pressed={selected}
+                        title={option.label}
+                      >
+                        <img
+                          src={option.src}
+                          alt=""
+                          loading="lazy"
+                          className={`h-full w-full object-cover transition-opacity duration-200 ${
+                            selected
+                              ? 'opacity-100'
+                              : 'opacity-65 group-hover/art:opacity-90'
+                          }`}
+                        />
+                        {selected && (
+                          <span className="absolute inset-0 flex items-center justify-center bg-black/20">
+                            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-accent text-accent-ink">
+                              <CheckIcon className="h-3 w-3" />
+                            </span>
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             </div>
 
