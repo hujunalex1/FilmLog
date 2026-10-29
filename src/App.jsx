@@ -7,6 +7,7 @@ import LogDialog from './components/LogDialog';
 import EntryDetailDialog from './components/EntryDetailDialog';
 import DataDialog from './components/DataDialog';
 import AccountDialog from './components/AccountDialog';
+import ConfirmDialog from './components/ConfirmDialog';
 import Toast from './components/Toast';
 import { retiredSeedIds, seedEntries } from './data/content';
 import { usePersistentState } from './hooks/usePersistentState';
@@ -298,24 +299,35 @@ export default function App() {
       return;
     }
 
+    const executeImport = () => {
+      const result = mergeEntries(entries, importedEntries, mode);
+      setEntries(result.entries);
+      setDialog(null);
+
+      if (mode === 'replace') {
+        showToast(`已替换为 ${importedEntries.length} 条记录。`);
+      } else {
+        showToast(
+          `导入完成：新增 ${result.added} 条，更新 ${result.updated} 条。`,
+        );
+      }
+    };
+
     if (mode === 'replace') {
-      const confirmed = window.confirm(
-        `确定用文件中的 ${importedEntries.length} 条记录替换当前 ${entries.length} 条记录吗？此操作不可撤销。`,
-      );
-      if (!confirmed) return;
+      setDialog({
+        type: 'confirm',
+        title: '确认覆盖手记记录',
+        description: `确定用导入文件中的 ${importedEntries.length} 条记录覆盖当前的 ${entries.length} 条记录吗？此操作不可撤销。`,
+        confirmLabel: '确认覆盖',
+        cancelLabel: '取消',
+        danger: true,
+        onConfirm: executeImport,
+        onClose: () => setDialog({ type: 'data' }),
+      });
+      return;
     }
 
-    const result = mergeEntries(entries, importedEntries, mode);
-    setEntries(result.entries);
-    setDialog(null);
-
-    if (mode === 'replace') {
-      showToast(`已替换为 ${importedEntries.length} 条记录。`);
-    } else {
-      showToast(
-        `导入完成：新增 ${result.added} 条，更新 ${result.updated} 条。`,
-      );
-    }
+    executeImport();
   };
 
   const handleEdit = (entry) => {
@@ -453,16 +465,31 @@ export default function App() {
       return;
     }
 
-    const confirmed = window.confirm(
-      `确定要从手记中删除《${entry.title}》吗？此操作不可撤销。`,
-    );
-    if (!confirmed) return;
+    const returnToDetailId =
+      dialog?.type === 'detail' && dialog.id === entry.id ? entry.id : null;
 
-    setEntries((current) => current.filter((item) => item.id !== entry.id));
-    if (dialog?.type === 'detail' && dialog.id === entry.id) {
-      setDialog(null);
-    }
-    showToast('记录已删除。');
+    setDialog({
+      type: 'confirm',
+      title: '删除观影记录',
+      entry,
+      description:
+        '此操作不可撤销。该电影记录及相关的个人短评、评分等数据将被永久删除。',
+      confirmLabel: '删除记录',
+      cancelLabel: '取消',
+      danger: true,
+      onConfirm: () => {
+        setEntries((current) => current.filter((item) => item.id !== entry.id));
+        setDialog(null);
+        showToast(`已从手记中删除《${entry.title}》。`);
+      },
+      onClose: () => {
+        if (returnToDetailId) {
+          setDialog({ type: 'detail', id: returnToDetailId });
+        } else {
+          setDialog(null);
+        }
+      },
+    });
   };
 
   return (
@@ -517,6 +544,19 @@ export default function App() {
           />
         </main>
       </div>
+
+      {dialog?.type === 'confirm' && (
+        <ConfirmDialog
+          title={dialog.title}
+          description={dialog.description}
+          confirmLabel={dialog.confirmLabel}
+          cancelLabel={dialog.cancelLabel}
+          danger={dialog.danger}
+          entry={dialog.entry}
+          onConfirm={dialog.onConfirm}
+          onClose={dialog.onClose}
+        />
+      )}
 
       {dialog?.type === 'log' && (
         <LogDialog
