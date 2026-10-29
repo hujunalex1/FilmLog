@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import EmptyState from './EmptyState';
 import EntryCard from './EntryCard';
 import JournalToolbar from './JournalToolbar';
-import { HeartIcon, SearchIcon } from './Icons';
+import { ArrowUpIcon, HeartIcon, SearchIcon } from './Icons';
 
 const PAGE_SIZE = 16;
 
@@ -129,17 +129,34 @@ export default function JournalSection({
         </div>
       )}
 
-      {hasEntries && totalCount > 0 && (
-        <div className="mt-14 flex flex-wrap items-center justify-between gap-4 border-t border-hairline pt-5">
-          <p className="text-[9.5px] font-bold uppercase tracking-[.16em] text-low">
-            显示 {String(shownEntries.length).padStart(2, '0')} /{' '}
-            {String(totalCount).padStart(2, '0')} 条记录
-          </p>
-          <p className="text-[10px] tracking-[.03em] text-low">
+      <div className="mt-14 flex flex-wrap items-center justify-between gap-4 border-t border-hairline pt-6">
+        <div className="flex flex-wrap items-center gap-2.5 sm:gap-4">
+          {hasEntries && totalCount > 0 && (
+            <p className="text-[10px] font-bold uppercase tracking-[.14em] text-low">
+              显示 {String(shownEntries.length).padStart(2, '0')} /{' '}
+              {String(totalCount).padStart(2, '0')} 条记录
+            </p>
+          )}
+          {hasEntries && totalCount > 0 && (
+            <span className="hidden text-low/40 sm:inline" aria-hidden="true">
+              ·
+            </span>
+          )}
+          <p className="text-[10.5px] tracking-[.03em] text-low">
             每部看完的电影，都值得一句话。
           </p>
         </div>
-      )}
+
+        <button
+          type="button"
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          className="focus-ring inline-flex items-center gap-2 border border-hairline bg-panel/60 px-3.5 py-2 text-[11px] font-semibold tracking-[.08em] text-mid transition-all duration-200 hover:border-hi/25 hover:text-hi active:scale-[.98]"
+          aria-label="返回页面顶部"
+        >
+          返回顶部
+          <ArrowUpIcon className="h-3.5 w-3.5" />
+        </button>
+      </div>
     </section>
   );
 }

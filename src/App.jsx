@@ -8,6 +8,7 @@ import EntryDetailDialog from './components/EntryDetailDialog';
 import DataDialog from './components/DataDialog';
 import AccountDialog from './components/AccountDialog';
 import ConfirmDialog from './components/ConfirmDialog';
+import BackToTop from './components/BackToTop';
 import Toast from './components/Toast';
 import { retiredSeedIds, seedEntries } from './data/content';
 import { usePersistentState } from './hooks/usePersistentState';
@@ -601,6 +602,7 @@ export default function App() {
         />
       )}
 
+      <BackToTop />
       <Toast toast={toast} onDismiss={dismissToast} />
     </div>
   );

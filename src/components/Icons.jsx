@@ -188,6 +188,14 @@ export function ArrowUpRightIcon({ className = '' }) {
   );
 }
 
+export function ArrowUpIcon({ className = '' }) {
+  return (
+    <svg viewBox="0 0 20 20" className={className} {...baseProps}>
+      <path d="M10 16.2V3.8M4.8 9l5.2-5.2L15.2 9" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 export function ArrowRightIcon({ className = '' }) {
   return (
     <svg viewBox="0 0 20 20" className={className} {...baseProps}>
