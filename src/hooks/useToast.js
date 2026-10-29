@@ -9,10 +9,17 @@ export function useToast() {
     setToast(null);
   }, []);
 
-  const showToast = useCallback((message, tone = 'default') => {
+  const showToast = useCallback((message, options = {}) => {
     window.clearTimeout(timerRef.current);
-    setToast({ id: Date.now(), message, tone });
-    timerRef.current = window.setTimeout(() => setToast(null), 3200);
+    const opts = typeof options === 'string' ? { tone: options } : options;
+    const duration = opts.duration ?? (opts.action ? 4200 : 3200);
+    setToast({
+      id: Date.now(),
+      message,
+      tone: opts.tone || 'default',
+      action: opts.action,
+    });
+    timerRef.current = window.setTimeout(() => setToast(null), duration);
   }, []);
 
   useEffect(

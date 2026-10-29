@@ -248,10 +248,19 @@ export default function App() {
     setDialog({ type: 'detail', id: entry.id });
   };
 
+  const handleRequireAuth = (actionName) => {
+    showToast(`未登录状态无法${actionName}，请先登录账号。`, {
+      tone: 'warning',
+      action: {
+        label: '去登录',
+        onClick: () => setDialog({ type: 'account' }),
+      },
+    });
+  };
+
   const handleOpenLog = () => {
     if (!user) {
-      showToast('未登录状态无法记录电影，请先登录账号。');
-      setDialog({ type: 'account' });
+      handleRequireAuth('记录电影');
       return;
     }
     setDialog({ type: 'log', entry: null });
@@ -259,8 +268,7 @@ export default function App() {
 
   const handleOpenData = () => {
     if (!user) {
-      showToast('未登录状态无法导入或导出数据，请先登录账号。');
-      setDialog({ type: 'account' });
+      handleRequireAuth('导入或导出数据');
       return;
     }
     setDialog({ type: 'data' });
@@ -300,8 +308,7 @@ export default function App() {
 
   const handleImportData = (importedEntries, mode) => {
     if (!user) {
-      showToast('未登录状态无法导入记录，请先登录账号。');
-      setDialog({ type: 'account' });
+      handleRequireAuth('导入记录');
       return;
     }
 
@@ -338,8 +345,7 @@ export default function App() {
 
   const handleEdit = (entry) => {
     if (!user) {
-      showToast('未登录状态无法编辑电影记录，请先登录账号。');
-      setDialog({ type: 'account' });
+      handleRequireAuth('编辑电影记录');
       return;
     }
     setDialog({ type: 'log', entry, returnToDetailId: null });
@@ -347,8 +353,7 @@ export default function App() {
 
   const handleEditFromDetail = (entry) => {
     if (!user) {
-      showToast('未登录状态无法编辑电影记录，请先登录账号。');
-      setDialog({ type: 'account' });
+      handleRequireAuth('编辑电影记录');
       return;
     }
     setDialog({ type: 'log', entry, returnToDetailId: entry.id });
@@ -364,8 +369,7 @@ export default function App() {
 
   const handleSave = (values) => {
     if (!user) {
-      showToast('未登录状态无法保存电影记录，请先登录账号。');
-      setDialog({ type: 'account' });
+      handleRequireAuth('保存电影记录');
       return;
     }
 
@@ -393,8 +397,7 @@ export default function App() {
 
   const handleToggleFavorite = (entry) => {
     if (!user) {
-      showToast('未登录状态无法更改收藏，请先登录账号。');
-      setDialog({ type: 'account' });
+      handleRequireAuth('更改收藏');
       return;
     }
 
@@ -413,8 +416,7 @@ export default function App() {
 
   const handleToggleStatus = (entry) => {
     if (!user) {
-      showToast('未登录状态无法更改观影状态，请先登录账号。');
-      setDialog({ type: 'account' });
+      handleRequireAuth('更改观影状态');
       return;
     }
 
@@ -445,8 +447,7 @@ export default function App() {
 
   const handleUpdate = (entry, patch) => {
     if (!user) {
-      showToast('未登录状态无法修改评分，请先登录账号。');
-      setDialog({ type: 'account' });
+      handleRequireAuth('修改评分');
       return;
     }
 
@@ -466,8 +467,7 @@ export default function App() {
 
   const handleDelete = (entry) => {
     if (!user) {
-      showToast('未登录状态无法删除电影，请先登录账号。');
-      setDialog({ type: 'account' });
+      handleRequireAuth('删除电影');
       return;
     }
 
@@ -578,10 +578,7 @@ export default function App() {
           user={user}
           onClose={() => setDialog(null)}
           onImport={handleImportData}
-          onRequireAuth={() => {
-            showToast('未登录状态无法导入或导出数据，请先登录账号。');
-            setDialog({ type: 'account' });
-          }}
+          onRequireAuth={() => handleRequireAuth('导入或导出数据')}
         />
       )}
 
