@@ -11,6 +11,7 @@ import ConfirmDialog from './components/ConfirmDialog';
 import BackToTop from './components/BackToTop';
 import Toast from './components/Toast';
 import { retiredSeedIds, seedEntries } from './data/content';
+import { coverByEntryId } from './data/covers';
 import { usePersistentState } from './hooks/usePersistentState';
 import { useSupabaseAuth } from './hooks/useSupabaseAuth';
 import { useToast } from './hooks/useToast';
@@ -38,6 +39,24 @@ function mergeImportedEntries(currentEntries) {
       !retiredSeedIds.includes(entry?.id),
   );
   return [...customEntries, ...seedEntries];
+}
+
+function ensureCovers(items) {
+  if (!Array.isArray(items)) return items;
+  let changed = false;
+  const next = items.map((entry) => {
+    const cover = coverByEntryId[entry.id];
+    if (cover && (!entry.still || !entry.poster)) {
+      changed = true;
+      return {
+        ...entry,
+        still: entry.still || cover.still || '',
+        poster: entry.poster || cover.poster || '',
+      };
+    }
+    return entry;
+  });
+  return changed ? next : items;
 }
 
 function buildInitialEntries() {
@@ -84,6 +103,11 @@ export default function App() {
   } = useSupabaseAuth();
   const { toast, showToast, dismissToast } = useToast();
 
+  // Ensure all entries have resolved poster and still paths filled.
+  useEffect(() => {
+    setEntries((current) => ensureCovers(current));
+  }, [setEntries]);
+
   // One-time repair for browsers that already had an empty v3 array before
   // the historical import was added. Custom records are preserved.
   useEffect(() => {
@@ -129,7 +153,8 @@ export default function App() {
         if (cancelled) return;
 
         if (cloudEntries.length > 0) {
-          setEntries(cloudEntries);
+          const patched = ensureCovers(cloudEntries);
+          setEntries(patched);
           showToast(`已从云端加载 ${cloudEntries.length} 条记录。`);
         } else {
           const localEntries = entriesRef.current;
