@@ -55,7 +55,7 @@ export default function EntryCard({
             <ArtworkPlaceholder title={entry.title} variant="card" />
           )}
           <span
-            className="absolute inset-0 z-[1] bg-[linear-gradient(to_top,rgba(8,7,6,.54),rgba(8,7,6,0)_50%)]"
+            className="absolute inset-x-0 bottom-0 z-[1] h-14 bg-[linear-gradient(to_top,rgba(8,7,6,.6),transparent)]"
             aria-hidden="true"
           />
 

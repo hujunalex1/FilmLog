@@ -63,10 +63,9 @@ export default function EntryDetailDialog({
               <ArtworkPlaceholder title={entry.title} variant="poster" />
             )}
             <div
-              className="absolute inset-0 bg-[linear-gradient(to_top,rgba(8,7,6,.55),transparent_45%)]"
+              className="absolute inset-x-0 bottom-0 h-16 bg-[linear-gradient(to_top,rgba(8,7,6,.6),transparent)]"
               aria-hidden="true"
             />
-            <div className="grain absolute inset-0" aria-hidden="true" />
             <div className="text-shadow-cinema absolute bottom-3 right-3 text-right leading-none">
               <span className="block text-[11px] font-extrabold tracking-[.02em] text-white">
                 motif

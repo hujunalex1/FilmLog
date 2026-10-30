@@ -90,13 +90,13 @@
   }
 
   .cinema-still {
-    filter: saturate(0.7) contrast(1.08) brightness(0.75) sepia(0.06);
-    transition: filter 600ms var(--ease-expo), transform 700ms var(--ease-expo);
+    image-rendering: auto;
+    transition: transform 500ms var(--ease-expo);
   }
 
   .group:hover .cinema-still,
   .group:focus-within .cinema-still {
-    filter: saturate(0.8) contrast(1.08) brightness(0.84) sepia(0.05);
+    transform: scale(1.02);
   }
 
   .grain::after {

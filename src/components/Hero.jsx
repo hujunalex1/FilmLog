@@ -127,10 +127,9 @@ export default function Hero({
               <ArtworkPlaceholder title={featured.title} variant="hero" />
             )}
             <div
-              className="absolute inset-0 bg-[linear-gradient(to_top,rgba(8,7,6,.94)_0%,rgba(8,7,6,.58)_42%,rgba(8,7,6,.16)_72%,rgba(8,7,6,.3)_100%)]"
+              className="absolute inset-0 bg-[linear-gradient(to_top,rgba(8,7,6,.85)_0%,rgba(8,7,6,.4)_40%,transparent_75%)]"
               aria-hidden="true"
             />
-            <div className="grain absolute inset-0" aria-hidden="true" />
 
             <div className="absolute left-5 right-5 top-5 flex items-start justify-between gap-3">
               <span className="inline-flex items-center gap-2 border border-white/15 bg-black/70 px-2.5 py-1.5 text-[9px] font-bold tracking-[.14em] text-white/85">
